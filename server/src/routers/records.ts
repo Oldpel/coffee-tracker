@@ -108,8 +108,7 @@ export const recordsRouter = router({
       }
 
       const curvePoints: Array<{ time: number, weight: number, flow: number }> = [];
-      let previousTime = 0;
-      let previousWeight = 0;
+      let lastSavedTime = -1;
 
       for (let i = 0; i < parsed.data.length; i++) {
         const row = parsed.data[i] as any;
@@ -118,23 +117,26 @@ export const recordsRouter = router({
 
         if (isNaN(time) || isNaN(weight)) continue;
 
-        let flow = 0;
-        if (i > 0) {
-          const deltaTime = time - previousTime;
-          const deltaWeight = weight - previousWeight;
-          if (deltaTime > 0) {
-            flow = deltaWeight / deltaTime;
+        // Downsample: Keep one point every 0.5 seconds or the very last point
+        if (time - lastSavedTime >= 0.5 || i === parsed.data.length - 1) {
+          let flow = 0;
+          if (curvePoints.length > 0) {
+            const lastPoint = curvePoints[curvePoints.length - 1];
+            const deltaTime = time - lastPoint.time;
+            const deltaWeight = weight - lastPoint.weight;
+            if (deltaTime > 0) {
+              flow = deltaWeight / deltaTime;
+            }
           }
+
+          curvePoints.push({
+            time: parseFloat(time.toFixed(1)),
+            weight: parseFloat(weight.toFixed(2)),
+            flow: Math.max(0, parseFloat(flow.toFixed(2)))
+          });
+
+          lastSavedTime = time;
         }
-
-        curvePoints.push({
-          time,
-          weight,
-          flow: Math.max(0, parseFloat(flow.toFixed(2))) // Flow usually isn't negative, but keep it clean
-        });
-
-        previousTime = time;
-        previousWeight = weight;
       }
 
       const curveDataJson = JSON.stringify(curvePoints);
