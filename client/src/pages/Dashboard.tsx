@@ -206,18 +206,27 @@ export default function Dashboard() {
             </div>
 
             <div className="flex space-x-2 mb-6 bg-white/40 p-1 rounded-xl">
-              <button 
-                onClick={() => setInputMode('csv')} 
-                className={`flex-1 py-2 rounded-lg text-sm font-medium transition-all ${inputMode === 'csv' ? 'bg-white shadow text-primary' : 'text-gray-600 hover:bg-white/50'}`}
-              >上传 CSV</button>
-              <button 
-                onClick={() => setInputMode('espresso')} 
-                className={`flex-1 py-2 rounded-lg text-sm font-medium transition-all ${inputMode === 'espresso' ? 'bg-white shadow text-primary' : 'text-gray-600 hover:bg-white/50'}`}
-              >手动意式</button>
-              <button 
-                onClick={() => setInputMode('pourover')} 
-                className={`flex-1 py-2 rounded-lg text-sm font-medium transition-all ${inputMode === 'pourover' ? 'bg-white shadow text-primary' : 'text-gray-600 hover:bg-white/50'}`}
-              >手动手冲</button>
+              {[
+                { id: 'csv', label: '上传 CSV' },
+                { id: 'espresso', label: '手动意式' },
+                { id: 'pourover', label: '手动手冲' }
+              ].map(mode => (
+                <button 
+                  key={mode.id}
+                  onClick={() => setInputMode(mode.id as any)} 
+                  className={`relative flex-1 py-2 rounded-lg text-sm font-medium transition-colors ${inputMode === mode.id ? 'text-primary' : 'text-gray-600 hover:text-gray-800'}`}
+                >
+                  {inputMode === mode.id && (
+                    <motion.div
+                      layoutId="dashboard-mode-indicator"
+                      className="absolute inset-0 bg-white shadow-sm z-0"
+                      style={{ borderRadius: 8 }}
+                      transition={{ type: "spring", stiffness: 450, damping: 25, mass: 0.5 }}
+                    />
+                  )}
+                  <span className="relative z-10">{mode.label}</span>
+                </button>
+              ))}
             </div>
 
             {inputMode === 'csv' && (

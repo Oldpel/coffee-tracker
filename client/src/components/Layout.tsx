@@ -44,9 +44,15 @@ export default function Layout({ children }: { children: React.ReactNode }) {
                         <div className="relative px-4 py-2 cursor-pointer group rounded-xl">
                           {isActive && (
                               <motion.div
-                              initial={{ opacity: 0 }}
-                              animate={{ opacity: 1 }}
-                              className="absolute inset-0 bg-white/60 shadow-[0_2px_10px_rgba(0,0,0,0.05)] border border-white/50 rounded-xl z-0"
+                              layoutId="liquid-nav-indicator"
+                              className="absolute inset-0 bg-white/60 shadow-[0_2px_10px_rgba(0,0,0,0.05)] z-0"
+                              style={{ borderRadius: 12 }}
+                              transition={{ 
+                                type: "spring", 
+                                stiffness: 450, 
+                                damping: 25, 
+                                mass: 0.5 
+                              }}
                             />
                           )}
                           <span className={`relative z-10 text-sm font-bold transition-colors duration-300 ${isActive ? 'text-primary drop-shadow-sm' : 'text-gray-600 group-hover:text-primary/80'}`}>
