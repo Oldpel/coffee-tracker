@@ -1,0 +1,89 @@
+@import "tailwindcss";
+
+@theme {
+  --color-primary: #5B8DEE;
+  --color-secondary: #E8B4C8;
+  --color-background: #F5F7FA;
+  --color-foreground: #2C3E50;
+  --color-border: #E0E6ED;
+}
+
+body {
+  margin: 0;
+  color: var(--color-foreground);
+  background-color: #f1f5f9;
+  background: 
+    radial-gradient(at 0% 0%, rgba(91,141,238,0.2) 0, transparent 50%), 
+    radial-gradient(at 50% 0%, rgba(167,139,250,0.15) 0, transparent 50%), 
+    radial-gradient(at 100% 0%, rgba(232,180,200,0.2) 0, transparent 50%);
+  background-size: 400% 400%;
+  animation: gradientFlow 15s ease infinite;
+  min-height: 100vh;
+}
+
+body::before {
+  content: "";
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: 
+    radial-gradient(circle at 15% 50%, rgba(91, 141, 238, 0.4), transparent 50%),
+    radial-gradient(circle at 85% 30%, rgba(232, 180, 200, 0.4), transparent 50%),
+    radial-gradient(circle at 50% 80%, rgba(167, 139, 250, 0.4), transparent 50%);
+  z-index: -1;
+  animation: blobFlow 20s infinite alternate linear;
+}
+
+@keyframes blobFlow {
+  0% { transform: scale(1) translate(0, 0); }
+  50% { transform: scale(1.2) translate(3%, 3%); }
+  100% { transform: scale(0.9) translate(-3%, -3%); }
+}
+
+@keyframes gradientFlow {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+@layer components {
+  /* Authentic Liquid Glass (Maplezz Style) */
+  .liquid-glass-container {
+    @apply relative z-10;
+  }
+
+  .liquidGlass-wrapper {
+    @apply relative transition-colors duration-300 shadow-xl shadow-slate-200/50;
+  }
+
+  .liquidGlass-wrapper:hover {
+    @apply bg-white/40;
+  }
+
+  .liquidGlass-effect {
+    @apply absolute inset-0 pointer-events-none;
+    backdrop-filter: blur(12px);
+    filter: url(#glass-distortion);
+  }
+
+  .liquidGlass-tint {
+    @apply absolute inset-0 pointer-events-none bg-gradient-to-br from-white/60 to-white/20;
+  }
+
+  .liquidGlass-shine {
+    @apply absolute inset-0 pointer-events-none border border-white/80;
+    box-shadow: inset 0 2px 4px rgba(255, 255, 255, 0.8), inset 0 -1px 2px rgba(255, 255, 255, 0.3);
+  }
+
+  .liquidGlass-text {
+    @apply relative z-10 text-foreground;
+  }
+
+  /* Legacy utility classes pointing to new structure or kept for inputs/buttons */
+  .glass-input {
+    @apply w-full px-4 py-2 bg-white/40 border border-white/60 shadow-inner rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/50 focus:bg-white/80 transition-all text-foreground;
+  }
+
+  .glass-button {
+    @apply relative overflow-hidden px-6 py-2 bg-gradient-to-br from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 text-white rounded-xl shadow-[0_8px_16px_rgba(91,141,238,0.3)] hover:shadow-[0_12px_20px_rgba(91,141,238,0.4)] transition-all font-medium border border-white/20 disabled:opacity-50;
+  }
+}
