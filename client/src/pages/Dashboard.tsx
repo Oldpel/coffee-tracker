@@ -145,7 +145,6 @@ export default function Dashboard() {
       <div className="flex justify-between items-end mb-6 relative z-10">
         <h1 className="text-3xl font-bold">概览</h1>
         <motion.button 
-          layoutId="record-modal"
           whileHover={{ scale: 1.02 }}
           whileTap={{ scale: 0.95 }}
           transition={{ type: "spring", stiffness: 300, damping: 20 }}
@@ -167,7 +166,9 @@ export default function Dashboard() {
             onClick={() => setShowModal(false)}
           />
           <motion.div 
-            layoutId="record-modal"
+            initial={{ opacity: 0, scale: 0.95, y: 20 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.95, y: 20 }}
             transition={{ type: "spring", stiffness: 300, damping: 30 }}
             className="w-full max-w-lg relative z-10 bg-white/90 backdrop-blur-xl shadow-2xl"
             style={{ borderRadius: '1.5rem', overflow: 'hidden' }}
