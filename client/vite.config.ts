@@ -11,11 +11,19 @@ export default defineConfig({
   build: {
     rollupOptions: {
       output: {
-        manualChunks: {
-          'react-vendor': ['react', 'react-dom'],
-          'chart-vendor': ['recharts'],
-          'trpc-vendor': ['@trpc/client', '@trpc/react-query', '@tanstack/react-query'],
-          'ui-vendor': ['framer-motion', 'lucide-react']
+        manualChunks(id: string) {
+          if (id.includes('node_modules/react-dom') || id.includes('node_modules/react/')) {
+            return 'react-vendor';
+          }
+          if (id.includes('node_modules/recharts') || id.includes('node_modules/d3')) {
+            return 'chart-vendor';
+          }
+          if (id.includes('node_modules/@trpc') || id.includes('node_modules/@tanstack')) {
+            return 'trpc-vendor';
+          }
+          if (id.includes('node_modules/framer-motion') || id.includes('node_modules/lucide-react')) {
+            return 'ui-vendor';
+          }
         }
       }
     },
