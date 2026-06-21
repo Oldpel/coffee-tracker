@@ -1,5 +1,6 @@
 import express from 'express';
 import cors from 'cors';
+import path from 'path';
 import * as trpcExpress from '@trpc/server/adapters/express';
 import { appRouter } from './routers';
 import { createContext } from './trpc';
@@ -8,7 +9,7 @@ import { users } from './db/schema';
 import { eq } from 'drizzle-orm';
 
 const app = express();
-app.use(cors({ origin: 'http://localhost:5173' }));
+app.use(cors()); // Allow all origins for simplicity in this MVP, or configure it explicitly
 
 // Ensure a test user exists for MVP testing
 async function ensureTestUser() {
@@ -34,6 +35,15 @@ app.use(
 );
 
 const PORT = process.env.PORT || 3000;
+
+// Serve frontend in production
+const clientDistPath = path.join(__dirname, '../../client/dist');
+app.use(express.static(clientDistPath));
+
+app.get('*', (req, res) => {
+  if (req.path.startsWith('/api')) return res.status(404).json({ error: 'Not found' });
+  res.sendFile(path.join(clientDistPath, 'index.html'));
+});
 
 app.listen(PORT, async () => {
   await ensureTestUser();

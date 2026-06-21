@@ -7,11 +7,13 @@ export const trpc = createTRPCReact<AppRouter>();
 export const trpcClient = trpc.createClient({
   links: [
     httpBatchLink({
-      url: 'http://localhost:3000/api/trpc',
-      headers: () => {
+      url: import.meta.env.PROD ? '/api/trpc' : 'http://localhost:3000/api/trpc',
+      async headers() {
         const token = localStorage.getItem('token');
-        return token ? { Authorization: `Bearer ${token}` } : {};
-      }
+        return {
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        };
+      },
     }),
   ],
 });
