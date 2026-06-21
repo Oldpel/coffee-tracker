@@ -339,7 +339,7 @@ export default function Dashboard() {
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
             <h2 className="text-xl font-bold text-foreground flex items-center">
               冲煮曲线图 
-              {realCurveData && <span className="text-sm font-normal text-green-700 bg-green-100/50 backdrop-blur-md px-2 py-1 rounded ml-3 border border-green-200/50">有效数据</span>}
+              {realCurveData && <span className="text-sm font-normal text-green-700 bg-green-100/50 backdrop-blur-md px-2 py-1 rounded ml-3 border border-green-200/50 whitespace-nowrap">有效数据</span>}
             </h2>
             
             {recordsWithCurves.length > 0 && (
