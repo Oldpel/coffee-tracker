@@ -1,10 +1,11 @@
 import { useRoute, useLocation } from 'wouter';
 import { trpc } from '../trpc';
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import LiquidGlassPanel from '../components/LiquidGlassPanel';
 import { 
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer 
 } from 'recharts';
+import { motion, AnimatePresence } from 'framer-motion';
 
 export default function BeanDetail() {
   const [, params] = useRoute('/beans/:id');
@@ -19,13 +20,15 @@ export default function BeanDetail() {
   const [expandedRecordId, setExpandedRecordId] = useState<number | null>(null);
   const utils = trpc.useUtils();
   
-  const createRecord = trpc.records.create.useMutation({
-    onSuccess: () => {
-      utils.records.listByBean.invalidate({ beanId });
-      utils.records.getRecent.invalidate();
-      setShowAddRecord(false);
-    }
-  });
+  const createRecord = trpc.records.create.useMutation();
+  const uploadMutation = trpc.records.uploadCurve.useMutation();
+
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [isUploading, setIsUploading] = useState(false);
+  const [inputMode, setInputMode] = useState<'none' | 'csv' | 'espresso' | 'pourover'>('none');
+  const [espressoTime, setEspressoTime] = useState('');
+  const [espressoYield, setEspressoYield] = useState('');
+  const [pouroverNodes, setPouroverNodes] = useState([{ time: '0', weight: '0' }, { time: '', weight: '' }]);
 
   const deleteBean = trpc.beans.delete.useMutation({
     onSuccess: () => {
@@ -34,16 +37,86 @@ export default function BeanDetail() {
     }
   });
 
-  const handleAddRecord = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleAddRecord = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const formData = new FormData(e.currentTarget);
-    createRecord.mutate({
-      beanId,
-      brewDate: formData.get('brewDate') as string || new Date().toISOString(),
-      brewMethod: formData.get('brewMethod') as string,
-      tasteRating: parseInt(formData.get('tasteRating') as string) || undefined,
-      notes: formData.get('notes') as string,
-    });
+    
+    let csvDataToUpload = "";
+    if (inputMode === 'espresso') {
+      const t = parseFloat(espressoTime);
+      const y = parseFloat(espressoYield);
+      if (isNaN(t) || isNaN(y) || t <= 0) {
+        alert("请输入有效的意式萃取参数");
+        return;
+      }
+      csvDataToUpload = "Time,Weight\n";
+      for (let curr = 0; curr < t; curr++) {
+        csvDataToUpload += `${curr},${((curr / t) * y).toFixed(2)}\n`;
+      }
+      csvDataToUpload += `${t},${y}\n`;
+    } else if (inputMode === 'pourover') {
+      const sorted = [...pouroverNodes]
+        .map(n => ({ t: parseFloat(n.time), w: parseFloat(n.weight) }))
+        .filter(n => !isNaN(n.t) && !isNaN(n.w))
+        .sort((a, b) => a.t - b.t);
+
+      if (sorted.length < 2) { alert("至少需要两个有效的时间节点"); return; }
+      if (sorted[0].t !== 0) { alert("第一个节点的时间必须为 0"); return; }
+
+      csvDataToUpload = "Time,Weight\n";
+      for (let i = 0; i < sorted.length - 1; i++) {
+        const nodeA = sorted[i];
+        const nodeB = sorted[i+1];
+        if (nodeA.t === nodeB.t) continue;
+
+        for (let currT = nodeA.t; currT < nodeB.t; currT++) {
+          const progress = (currT - nodeA.t) / (nodeB.t - nodeA.t);
+          const currW = nodeA.w + progress * (nodeB.w - nodeA.w);
+          csvDataToUpload += `${currT},${currW.toFixed(2)}\n`;
+        }
+      }
+      const last = sorted[sorted.length - 1];
+      csvDataToUpload += `${last.t},${last.w}\n`;
+    } else if (inputMode === 'csv') {
+      const file = fileInputRef.current?.files?.[0];
+      if (file) {
+        csvDataToUpload = await file.text();
+      } else {
+        alert("请选择CSV文件");
+        return;
+      }
+    }
+
+    setIsUploading(true);
+    try {
+      const newRecord = await createRecord.mutateAsync({
+        beanId,
+        brewDate: formData.get('brewDate') as string || new Date().toISOString(),
+        brewMethod: formData.get('brewMethod') as string,
+        tasteRating: parseInt(formData.get('tasteRating') as string) || undefined,
+        notes: formData.get('notes') as string,
+      });
+
+      if (csvDataToUpload) {
+        await uploadMutation.mutateAsync({
+          id: newRecord.id,
+          csvData: csvDataToUpload
+        });
+      }
+      
+      utils.records.listByBean.invalidate({ beanId });
+      utils.records.getRecent.invalidate();
+      setShowAddRecord(false);
+      setInputMode('none');
+      setEspressoTime('');
+      setEspressoYield('');
+      setPouroverNodes([{ time: '0', weight: '0' }, { time: '', weight: '' }]);
+      if (fileInputRef.current) fileInputRef.current.value = '';
+    } catch (err: any) {
+      alert("保存失败: " + err.message);
+    } finally {
+      setIsUploading(false);
+    }
   };
 
   const handleDelete = () => {
@@ -148,9 +221,104 @@ export default function BeanDetail() {
                 <textarea name="notes" rows={3} className="glass-input" placeholder="记录研磨度、水温、粉水比以及风味体验..."></textarea>
               </div>
             </div>
-            <div className="mt-4 text-right">
-              <button type="submit" disabled={createRecord.isPending} className="glass-button">
-                {createRecord.isPending ? '保存中...' : '保存记录'}
+
+            {/* Optional Curve Data Section */}
+            <div className="mt-8 border-t border-gray-200/50 pt-6">
+              <h4 className="text-md font-semibold mb-4 text-foreground">附加冲煮曲线 (可选)</h4>
+              
+              <div className="flex space-x-2 mb-6 bg-white/40 p-1 rounded-xl">
+                <button 
+                  type="button"
+                  onClick={() => setInputMode('none')} 
+                  className={`flex-1 py-2 rounded-lg text-sm font-medium transition-all ${inputMode === 'none' ? 'bg-white shadow text-primary' : 'text-gray-600 hover:bg-white/50'}`}
+                >不附带曲线</button>
+                <button 
+                  type="button"
+                  onClick={() => setInputMode('csv')} 
+                  className={`flex-1 py-2 rounded-lg text-sm font-medium transition-all ${inputMode === 'csv' ? 'bg-white shadow text-primary' : 'text-gray-600 hover:bg-white/50'}`}
+                >上传 CSV</button>
+                <button 
+                  type="button"
+                  onClick={() => setInputMode('espresso')} 
+                  className={`flex-1 py-2 rounded-lg text-sm font-medium transition-all ${inputMode === 'espresso' ? 'bg-white shadow text-primary' : 'text-gray-600 hover:bg-white/50'}`}
+                >手动意式</button>
+                <button 
+                  type="button"
+                  onClick={() => setInputMode('pourover')} 
+                  className={`flex-1 py-2 rounded-lg text-sm font-medium transition-all ${inputMode === 'pourover' ? 'bg-white shadow text-primary' : 'text-gray-600 hover:bg-white/50'}`}
+                >手动手冲</button>
+              </div>
+
+              {inputMode === 'csv' && (
+                <div className="space-y-4 animate-fadeDown">
+                  <p className="text-sm text-gray-600">上传智能秤导出的 CSV 文件。请确保包含 `Time` 与 `Weight` 列。</p>
+                  <input 
+                    type="file" accept=".csv,.json" className="glass-input w-full" ref={fileInputRef} 
+                  />
+                </div>
+              )}
+
+              {inputMode === 'espresso' && (
+                <div className="space-y-4 animate-fadeDown">
+                  <p className="text-sm text-gray-600 mb-4">输入总萃取时间和液重，将自动计算出平均流速曲线。</p>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 ml-1 mb-1">总萃取时间 (秒)</label>
+                    <input type="number" value={espressoTime} onChange={e => setEspressoTime(e.target.value)} className="glass-input w-full" placeholder="例如：30" />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 ml-1 mb-1">最终萃取液重 (克)</label>
+                    <input type="number" value={espressoYield} onChange={e => setEspressoYield(e.target.value)} className="glass-input w-full" placeholder="例如：36" />
+                  </div>
+                </div>
+              )}
+
+              {inputMode === 'pourover' && (
+                <div className="space-y-4 animate-fadeDown">
+                  <p className="text-sm text-gray-600 mb-2">输入注水节点，系统会自动计算各阶段的平均注水流速并绘制平滑曲线。</p>
+                  <div className="space-y-3">
+                    <div className="flex font-medium text-sm text-gray-700 ml-1">
+                      <div className="w-1/2">时间节点 (秒)</div>
+                      <div className="w-1/2">累积液重 (克)</div>
+                    </div>
+                    {pouroverNodes.map((node, i) => (
+                      <div key={i} className="flex gap-2 items-center">
+                        <input 
+                          type="number" value={node.time} 
+                          onChange={e => {
+                            const n = [...pouroverNodes]; n[i].time = e.target.value; setPouroverNodes(n);
+                          }} 
+                          className="glass-input" placeholder="秒" 
+                          disabled={i === 0}
+                        />
+                        <input 
+                          type="number" value={node.weight} 
+                          onChange={e => {
+                            const n = [...pouroverNodes]; n[i].weight = e.target.value; setPouroverNodes(n);
+                          }} 
+                          className="glass-input" placeholder="克" 
+                        />
+                        {i > 0 && (
+                          <button type="button" onClick={() => {
+                            const n = [...pouroverNodes]; n.splice(i, 1); setPouroverNodes(n);
+                          }} className="text-red-400 hover:text-red-600 p-2">✕</button>
+                        )}
+                      </div>
+                    ))}
+                    <button 
+                      type="button"
+                      onClick={() => setPouroverNodes([...pouroverNodes, { time: '', weight: '' }])}
+                      className="text-primary text-sm font-medium hover:text-primary/80"
+                    >
+                      + 添加新节点
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            <div className="mt-8 text-right">
+              <button type="submit" disabled={isUploading || createRecord.isPending} className="glass-button">
+                {isUploading || createRecord.isPending ? '保存中...' : '保存记录并生成曲线'}
               </button>
             </div>
           </form>
