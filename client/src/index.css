@@ -11,7 +11,7 @@
 body {
   margin: 0;
   color: var(--color-foreground);
-  background-color: #f1f5f9;
+  background-color: transparent;
   overflow-x: hidden;
   min-height: 100vh;
 }
@@ -25,6 +25,7 @@ body::before {
   background-image: url('/bg.jpg');
   background-size: cover;
   background-position: center;
+  transform: translateZ(0);
 }
 
 /* Glass Gradient Overlay Layer */
@@ -42,6 +43,7 @@ body::after {
     rgba(255, 255, 255, 0.15);
   background-size: 200% 200%;
   animation: gradientFlow 15s ease infinite;
+  transform: translateZ(0);
 }
 
 @keyframes gradientFlow {
