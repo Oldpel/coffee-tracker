@@ -20,6 +20,20 @@ export const recordsRouter = router({
         .orderBy(desc(brewingRecords.brewDate));
     }),
 
+  getById: protectedProcedure
+    .input(z.object({ id: z.number() }))
+    .query(async ({ ctx, input }) => {
+      const results = await db.select().from(brewingRecords)
+        .where(
+          and(
+            eq(brewingRecords.id, input.id),
+            eq(brewingRecords.userId, ctx.user.id),
+            eq(brewingRecords.isDeleted, false)
+          )
+        );
+      return results[0] || null;
+    }),
+
   getRecent: protectedProcedure.query(async ({ ctx }) => {
     return await db.select().from(brewingRecords)
       .where(

@@ -1,4 +1,4 @@
-import { sqliteTable, text, integer } from 'drizzle-orm/sqlite-core';
+import { sqliteTable, text, integer, index } from 'drizzle-orm/sqlite-core';
 
 export const users = sqliteTable('users', {
   id: integer('id').primaryKey({ autoIncrement: true }),
@@ -44,7 +44,10 @@ export const brewingRecords = sqliteTable('brewing_records', {
   isDeleted: integer('isDeleted', { mode: 'boolean' }).default(false),
   createdAt: text('createdAt').notNull().default(new Date().toISOString()),
   updatedAt: text('updatedAt').notNull().default(new Date().toISOString()),
-});
+}, (table) => ({
+  beanIdx: index('idx_brewing_records_beanId').on(table.beanId),
+  userIdx: index('idx_brewing_records_userId').on(table.userId),
+}));
 
 export const communityPosts = sqliteTable('community_posts', {
   id: integer('id').primaryKey({ autoIncrement: true }),
