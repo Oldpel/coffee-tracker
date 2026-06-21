@@ -4,6 +4,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { trpc } from '../trpc';
 import SHA256 from 'crypto-js/sha256';
 import LiquidGlassPanel from '../components/LiquidGlassPanel';
+import { useQueryClient } from '@tanstack/react-query';
 
 import { motion } from 'framer-motion';
 
@@ -18,8 +19,11 @@ export default function Login() {
   const [name, setName] = useState('');
   const [error, setError] = useState('');
 
+  const queryClient = useQueryClient();
+
   const loginMutation = trpc.auth.login.useMutation({
     onSuccess: (data) => {
+      queryClient.clear();
       login(data.token, {
         id: data.user.id,
         name: data.user.name || 'Unknown',
@@ -32,6 +36,7 @@ export default function Login() {
 
   const registerMutation = trpc.auth.register.useMutation({
     onSuccess: (data) => {
+      queryClient.clear();
       login(data.token, {
         id: data.user.id,
         name: data.user.name || 'Unknown',

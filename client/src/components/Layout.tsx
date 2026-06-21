@@ -1,12 +1,19 @@
 
 import { Link, useLocation } from 'wouter';
 import { useAuth } from '../contexts/AuthContext';
-
+import { useQueryClient } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
 
 export default function Layout({ children }: { children: React.ReactNode }) {
-  const [location] = useLocation();
+  const [location, setLocation] = useLocation();
   const { user, logout } = useAuth();
+  const queryClient = useQueryClient();
+
+  const handleLogout = () => {
+    queryClient.clear();
+    logout();
+    setLocation('/login');
+  };
 
   const navItems = [
     { href: '/', label: '仪表盘' },
@@ -64,7 +71,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
                       欢迎, {user.name}
                     </span>
                     <button 
-                      onClick={logout}
+                      onClick={handleLogout}
                       className="text-sm font-medium text-gray-700 hover:text-red-500 transition-colors bg-white/40 px-4 py-2 rounded-xl border border-white/50 hover:bg-white/60 shadow-sm"
                     >
                       退出登录
