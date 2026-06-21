@@ -5,6 +5,7 @@ import LiquidGlassPanel from '../components/LiquidGlassPanel';
 import { 
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer 
 } from 'recharts';
+import { motion, AnimatePresence } from 'framer-motion';
 
 export default function Dashboard() {
   const { data: beans } = trpc.beans.list.useQuery();
@@ -143,21 +144,46 @@ export default function Dashboard() {
     <div className="space-y-6 pb-12">
       <div className="flex justify-between items-end mb-6 relative z-10">
         <h1 className="text-3xl font-bold">概览</h1>
-        <button 
+        <motion.button 
+          layoutId="record-modal"
+          whileHover={{ scale: 1.02 }}
+          whileTap={{ scale: 0.95 }}
+          transition={{ type: "spring", stiffness: 300, damping: 20 }}
           onClick={() => setShowModal(true)}
           className="glass-button px-6 shadow-sm"
         >
           + 记录/上传冲煮曲线
-        </button>
+        </motion.button>
       </div>
 
+      <AnimatePresence>
       {showModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/10 backdrop-blur-sm p-4">
-          <LiquidGlassPanel className="w-full max-w-lg shadow-2xl relative" paddingClass="p-8">
-            <button onClick={() => setShowModal(false)} className="absolute top-4 right-4 text-gray-500 hover:text-gray-800">
-              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path></svg>
-            </button>
-            <h2 className="text-2xl font-bold text-foreground mb-6">曲线数据录入</h2>
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+          <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="absolute inset-0 bg-black/20 backdrop-blur-md"
+            onClick={() => setShowModal(false)}
+          />
+          <motion.div 
+            layoutId="record-modal"
+            transition={{ type: "spring", stiffness: 250, damping: 25 }}
+            className="w-full max-w-lg relative z-10"
+            style={{ borderRadius: '1.5rem', overflow: 'hidden' }}
+          >
+            <LiquidGlassPanel className="w-full shadow-2xl relative" paddingClass="p-8">
+              <button onClick={() => setShowModal(false)} className="absolute top-4 right-4 text-gray-500 hover:text-gray-800 z-20">
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+              </button>
+              <motion.h2 
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.1 }}
+                className="text-2xl font-bold text-foreground mb-6"
+              >
+                曲线数据录入
+              </motion.h2>
             
             <div className="mb-6">
               <label className="block text-sm font-medium text-gray-700 ml-1 mb-1">选择关联的咖啡豆</label>
@@ -266,8 +292,10 @@ export default function Dashboard() {
             )}
 
           </LiquidGlassPanel>
+          </motion.div>
         </div>
       )}
+      </AnimatePresence>
       
       {/* Top Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 relative z-10">
