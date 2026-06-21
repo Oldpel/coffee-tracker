@@ -1,6 +1,8 @@
 import { trpc } from '../trpc';
 import { Link } from 'wouter';
 import LiquidGlassPanel from '../components/LiquidGlassPanel';
+import { useAuth } from '../contexts/AuthContext';
+import { useState } from 'react';
 import { 
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer 
 } from 'recharts';
@@ -10,6 +12,7 @@ export default function RecordsList() {
   const utils = trpc.useUtils();
   const { data: records, isLoading } = trpc.records.getRecent.useQuery();
   const { data: beans } = trpc.beans.list.useQuery();
+  const [expandedRecordId, setExpandedRecordId] = useState<number | null>(null);
 
   const deleteRecord = trpc.records.delete.useMutation({
     onSuccess: () => {
@@ -88,18 +91,30 @@ export default function RecordsList() {
                   {record.notes && <p className="text-gray-700 text-sm mt-1 mb-4">{record.notes}</p>}
 
                   {realCurveData && (
-                    <div className="h-64 w-full mt-4 bg-white/20 rounded-xl p-4 border border-white/40">
-                      <ResponsiveContainer width="100%" height="100%">
-                        <LineChart data={realCurveData} margin={{ top: 10, right: 0, left: -20, bottom: 0 }}>
-                          <CartesianGrid strokeDasharray="3 3" opacity={0.3} stroke="#94a3b8" vertical={false} />
-                          <XAxis dataKey="time" tickFormatter={(val) => `${val}s`} stroke="#475569" fontSize={11} tickMargin={5} />
-                          <YAxis yAxisId="left" domain={['auto', 'auto']} stroke="#6366f1" fontSize={11} tickFormatter={(val) => `${val}g`} />
-                          <YAxis yAxisId="right" orientation="right" domain={[0, 'auto']} stroke="#3b82f6" fontSize={11} tickFormatter={(val) => `${val}`} width={30} />
-                          <Tooltip contentStyle={{ backgroundColor: 'rgba(255, 255, 255, 0.9)', backdropFilter: 'blur(10px)', borderRadius: '12px', border: '1px solid rgba(255, 255, 255, 0.5)', padding: '8px', fontSize: '12px' }} />
-                          <Line yAxisId="left" type="monotone" dataKey="weight" name="重量 (g)" stroke="#6366f1" strokeWidth={2} dot={false} isAnimationActive={false} />
-                          <Line yAxisId="right" type="stepAfter" dataKey="flow" name="流速 (g/s)" stroke="#3b82f6" strokeWidth={1.5} dot={false} isAnimationActive={false} />
-                        </LineChart>
-                      </ResponsiveContainer>
+                    <div className="mt-4">
+                      <button 
+                        onClick={() => setExpandedRecordId(expandedRecordId === record.id ? null : record.id)}
+                        className="text-primary hover:text-primary/80 text-sm font-medium flex items-center bg-primary/5 px-3 py-1.5 rounded-lg transition-colors border border-primary/10"
+                      >
+                        <svg className={`w-4 h-4 mr-1 transition-transform ${expandedRecordId === record.id ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>
+                        {expandedRecordId === record.id ? '收起曲线图' : '查看冲煮曲线'}
+                      </button>
+                      
+                      {expandedRecordId === record.id && (
+                        <div className="h-64 w-full mt-4 bg-white/20 rounded-xl p-4 border border-white/40 animate-fadeDown">
+                          <ResponsiveContainer width="100%" height="100%">
+                            <LineChart data={realCurveData} margin={{ top: 10, right: 0, left: -20, bottom: 0 }}>
+                              <CartesianGrid strokeDasharray="3 3" opacity={0.3} stroke="#94a3b8" vertical={false} />
+                              <XAxis dataKey="time" tickFormatter={(val) => `${val}s`} stroke="#475569" fontSize={11} tickMargin={5} />
+                              <YAxis yAxisId="left" domain={['auto', 'auto']} stroke="#6366f1" fontSize={11} tickFormatter={(val) => `${val}g`} />
+                              <YAxis yAxisId="right" orientation="right" domain={[0, 'auto']} stroke="#3b82f6" fontSize={11} tickFormatter={(val) => `${val}`} width={30} />
+                              <Tooltip contentStyle={{ backgroundColor: 'rgba(255, 255, 255, 0.9)', backdropFilter: 'blur(10px)', borderRadius: '12px', border: '1px solid rgba(255, 255, 255, 0.5)', padding: '8px', fontSize: '12px' }} />
+                              <Line yAxisId="left" type="monotone" dataKey="weight" name="重量 (g)" stroke="#6366f1" strokeWidth={2} dot={false} isAnimationActive={false} />
+                              <Line yAxisId="right" type="stepAfter" dataKey="flow" name="流速 (g/s)" stroke="#3b82f6" strokeWidth={1.5} dot={false} isAnimationActive={false} />
+                            </LineChart>
+                          </ResponsiveContainer>
+                        </div>
+                      )}
                     </div>
                   )}
                 </div>
