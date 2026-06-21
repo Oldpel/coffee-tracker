@@ -5,6 +5,8 @@ import { trpc } from '../trpc';
 import SHA256 from 'crypto-js/sha256';
 import LiquidGlassPanel from '../components/LiquidGlassPanel';
 
+import { motion } from 'framer-motion';
+
 export default function Login() {
   const [, setLocation] = useLocation();
   const { login } = useAuth();
@@ -125,26 +127,31 @@ export default function Login() {
             />
           </div>
 
-          <button 
-            type="submit"
+          <motion.button 
+            type="submit" 
             disabled={isPending}
-            className="w-full glass-button mt-8"
+            className="w-full glass-button mt-4"
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.95 }}
+            transition={{ type: "spring", stiffness: 300, damping: 20 }}
           >
             {isPending ? '请稍候...' : (isLoginView ? '登录' : '注册并登录')}
-          </button>
+          </motion.button>
         </form>
 
         <div className="mt-8 text-center">
-          <button 
-            type="button"
+          <motion.button 
+            type="button" 
             onClick={() => {
               setIsLoginView(!isLoginView);
               setError('');
             }}
-            className="text-sm font-medium text-primary hover:text-primary/80 transition-colors bg-transparent border-none cursor-pointer"
+            className="text-sm text-primary hover:text-primary/80 transition-colors mt-6 font-medium"
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
           >
             {isLoginView ? '没有账号？立即注册' : '已有账号？返回登录'}
-          </button>
+          </motion.button>
         </div>
         
         <p className="mt-8 text-xs text-gray-500 text-center font-medium">

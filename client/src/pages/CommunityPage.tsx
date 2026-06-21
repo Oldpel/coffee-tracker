@@ -1,6 +1,7 @@
 import { trpc } from '../trpc';
 import { useState } from 'react';
 import LiquidGlassPanel from '../components/LiquidGlassPanel';
+import { motion } from 'framer-motion';
 
 export default function CommunityPage() {
   const { data, isLoading } = trpc.community.listPosts.useQuery({ page: 1, pageSize: 20 });
@@ -28,12 +29,15 @@ export default function CommunityPage() {
     <div className="space-y-6 relative z-10">
       <div className="flex justify-between items-center mb-8">
         <h1 className="text-3xl font-bold text-foreground tracking-tight">社群交流</h1>
-        <button 
+        <motion.button 
           onClick={() => setShowAddPost(!showAddPost)}
           className="glass-button"
+          whileHover={{ scale: 1.02 }}
+          whileTap={{ scale: 0.95 }}
+          transition={{ type: "spring", stiffness: 300, damping: 20 }}
         >
           {showAddPost ? '取消发布' : '发布讨论'}
-        </button>
+        </motion.button>
       </div>
 
       {showAddPost && (
@@ -58,9 +62,15 @@ export default function CommunityPage() {
               <textarea name="content" required rows={6} className="glass-input" placeholder="分享你的想法..."></textarea>
             </div>
             <div className="mt-6 flex justify-end">
-              <button type="submit" disabled={createPost.isPending} className="glass-button px-8">
+              <motion.button 
+                type="submit" 
+                disabled={createPost.isPending} 
+                className="glass-button px-8"
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.95 }}
+              >
                 {createPost.isPending ? '发布中...' : '确认发布'}
-              </button>
+              </motion.button>
             </div>
           </form>
         </LiquidGlassPanel>

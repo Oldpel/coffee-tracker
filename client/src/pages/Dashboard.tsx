@@ -168,11 +168,16 @@ export default function Dashboard() {
           />
           <motion.div 
             layoutId="record-modal"
-            transition={{ type: "spring", stiffness: 250, damping: 25 }}
-            className="w-full max-w-lg relative z-10"
+            transition={{ type: "spring", stiffness: 300, damping: 30 }}
+            className="w-full max-w-lg relative z-10 bg-white/90 backdrop-blur-xl shadow-2xl"
             style={{ borderRadius: '1.5rem', overflow: 'hidden' }}
           >
-            <LiquidGlassPanel className="w-full shadow-2xl relative" paddingClass="p-8">
+            <motion.div 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.1, duration: 0.2 }}
+              className="p-8 w-full h-full relative"
+            >
               <button onClick={() => setShowModal(false)} className="absolute top-4 right-4 text-gray-500 hover:text-gray-800 z-20">
                 <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path></svg>
               </button>
@@ -219,13 +224,15 @@ export default function Dashboard() {
                 <input 
                   type="file" accept=".csv,.json" className="hidden" ref={fileInputRef} onChange={handleCsvUpload} 
                 />
-                <button 
+                <motion.button 
                   onClick={() => fileInputRef.current?.click()}
                   disabled={isUploading}
                   className="w-full glass-button mt-4"
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.95 }}
                 >
                   {isUploading ? '保存中...' : '选择文件并上传'}
-                </button>
+                </motion.button>
               </div>
             )}
 
@@ -291,7 +298,7 @@ export default function Dashboard() {
               </div>
             )}
 
-          </LiquidGlassPanel>
+            </motion.div>
           </motion.div>
         </div>
       )}

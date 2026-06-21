@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Link } from 'wouter';
 import { trpc } from '../trpc';
 import LiquidGlassPanel from '../components/LiquidGlassPanel';
+import { motion, AnimatePresence } from 'framer-motion';
 
 export default function BeansList() {
   const { data: beans, isLoading } = trpc.beans.list.useQuery();
@@ -32,12 +33,15 @@ export default function BeansList() {
     <div className="space-y-6 relative z-10 pb-20">
       <div className="flex justify-between items-center mb-8">
         <h1 className="text-3xl font-bold text-foreground tracking-tight">我的咖啡豆</h1>
-        <button 
+        <motion.button 
           onClick={() => setShowAddForm(!showAddForm)}
-          className="glass-button"
+          className="glass-button px-6"
+          whileHover={{ scale: 1.02 }}
+          whileTap={{ scale: 0.95 }}
+          transition={{ type: "spring", stiffness: 300, damping: 20 }}
         >
-          {showAddForm ? '取消添加' : '添加新豆子'}
-        </button>
+          {showAddForm ? '取消添加' : '+ 添加咖啡豆'}
+        </motion.button>
       </div>
 
       {showAddForm && (
@@ -84,9 +88,15 @@ export default function BeansList() {
               </div>
             </div>
             <div className="mt-6">
-              <button type="submit" disabled={createBean.isPending} className="glass-button w-full sm:w-auto">
-                {createBean.isPending ? '保存中...' : '保存豆子'}
-              </button>
+              <motion.button 
+                type="submit" 
+                disabled={createBean.isPending} 
+                className="glass-button w-full sm:w-auto"
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.95 }}
+              >
+                {createBean.isPending ? '保存中...' : '保存'}
+              </motion.button>
             </div>
           </form>
         </LiquidGlassPanel>

@@ -4,6 +4,7 @@ import LiquidGlassPanel from '../components/LiquidGlassPanel';
 import { 
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer 
 } from 'recharts';
+import { motion } from 'framer-motion';
 
 export default function RecordsList() {
   const { data: records, isLoading } = trpc.records.getRecent.useQuery();
@@ -17,12 +18,17 @@ export default function RecordsList() {
     <div className="max-w-4xl mx-auto relative z-10 pb-20">
       <div className="mb-6 flex items-center justify-between">
         <Link href="/">
-          <button className="text-primary hover:text-primary/80 cursor-pointer flex items-center bg-white/40 backdrop-blur-md px-4 py-2 rounded-xl border border-white/50 transition-all hover:bg-white/60 shadow-sm">
+          <motion.button 
+            className="text-primary hover:text-primary/80 cursor-pointer flex items-center bg-white/40 backdrop-blur-md px-4 py-2 rounded-xl border border-white/50 transition-all hover:bg-white/60 shadow-sm"
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.95 }}
+            transition={{ type: "spring", stiffness: 300, damping: 20 }}
+          >
             <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-1" viewBox="0 0 20 20" fill="currentColor">
               <path fillRule="evenodd" d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z" clipRule="evenodd" />
             </svg>
             返回仪表盘
-          </button>
+          </motion.button>
         </Link>
       </div>
 
