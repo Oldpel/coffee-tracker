@@ -87,6 +87,10 @@ export default function Layout({ children }: { children: React.ReactNode }) {
       <main className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8 relative z-0">
         {children}
       </main>
+
+      <div className="fixed bottom-4 right-4 z-0 text-white/50 text-xs font-medium tracking-wider backdrop-blur-sm px-2 py-1 rounded">
+        图片来源:PbrC冲煮赛
+      </div>
     </div>
   );
 }
