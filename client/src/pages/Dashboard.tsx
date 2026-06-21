@@ -359,15 +359,15 @@ export default function Dashboard() {
           <div className="h-80 w-full">
             {realCurveData ? (
               <ResponsiveContainer width="100%" height="100%">
-                <LineChart data={realCurveData} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
-                  <CartesianGrid strokeDasharray="3 3" opacity={0.3} stroke="#94a3b8" />
-                  <XAxis dataKey="time" label={{ value: '时间 (s)', position: 'insideBottomRight', offset: -10 }} stroke="#475569" />
-                  <YAxis yAxisId="left" domain={['auto', 'auto']} stroke="#6366f1" label={{ value: '重量 (g)', angle: -90, position: 'insideLeft' }} />
-                  <YAxis yAxisId="right" orientation="right" domain={[0, 'auto']} stroke="#3b82f6" label={{ value: '流速 (g/s)', angle: 90, position: 'insideRight' }} />
-                  <Tooltip contentStyle={{ backgroundColor: 'rgba(255, 255, 255, 0.7)', backdropFilter: 'blur(10px)', borderRadius: '12px', border: '1px solid rgba(255, 255, 255, 0.5)' }} />
-                  <Legend verticalAlign="top" height={36} />
-                  <Line yAxisId="left" type="monotone" dataKey="weight" name="重量 (g)" stroke="#6366f1" strokeWidth={3} dot={false} activeDot={{ r: 8 }} />
-                  <Line yAxisId="right" type="stepAfter" dataKey="flow" name="流速 (g/s)" stroke="#3b82f6" strokeWidth={2} dot={false} />
+                <LineChart data={realCurveData} margin={{ top: 10, right: 0, left: -20, bottom: 0 }}>
+                  <CartesianGrid strokeDasharray="3 3" opacity={0.3} stroke="#94a3b8" vertical={false} />
+                  <XAxis dataKey="time" tickFormatter={(val) => `${val}s`} stroke="#475569" fontSize={11} tickMargin={5} />
+                  <YAxis yAxisId="left" domain={['auto', 'auto']} stroke="#6366f1" fontSize={11} tickFormatter={(val) => `${val}g`} />
+                  <YAxis yAxisId="right" orientation="right" domain={[0, 'auto']} stroke="#3b82f6" fontSize={11} tickFormatter={(val) => `${val}`} width={30} />
+                  <Tooltip contentStyle={{ backgroundColor: 'rgba(255, 255, 255, 0.9)', backdropFilter: 'blur(10px)', borderRadius: '12px', border: '1px solid rgba(255, 255, 255, 0.5)', padding: '8px', fontSize: '12px' }} />
+                  <Legend verticalAlign="top" height={36} iconType="circle" wrapperStyle={{ fontSize: '12px', paddingBottom: '10px' }} />
+                  <Line yAxisId="left" type="monotone" dataKey="weight" name="重量 (g)" stroke="#6366f1" strokeWidth={3} dot={false} activeDot={{ r: 6 }} isAnimationActive={false} />
+                  <Line yAxisId="right" type="stepAfter" dataKey="flow" name="流速 (g/s)" stroke="#3b82f6" strokeWidth={2} dot={false} isAnimationActive={false} />
                 </LineChart>
               </ResponsiveContainer>
             ) : (
