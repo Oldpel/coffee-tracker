@@ -32,7 +32,18 @@ export const createContext = ({ req, res }: CreateExpressContextOptions) => {
 
 type Context = Awaited<ReturnType<typeof createContext>>;
 
-const t = initTRPC.context<Context>().create();
+const t = initTRPC.context<Context>().create({
+  errorFormatter({ shape }) {
+    return {
+      ...shape,
+      data: {
+        ...shape.data,
+        // Strip stack traces in production to prevent path leakage
+        stack: process.env.NODE_ENV === 'development' ? shape.data.stack : undefined,
+      },
+    };
+  },
+});
 
 export const router = t.router;
 export const publicProcedure = t.procedure;

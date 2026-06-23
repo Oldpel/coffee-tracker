@@ -6,7 +6,7 @@ import { AuthProvider, useAuth } from './contexts/AuthContext';
 import Dashboard from './pages/Dashboard';
 import BeansList from './pages/BeansList';
 import BeanDetail from './pages/BeanDetail';
-import CommunityPage from './pages/CommunityPage';
+
 import RecordsList from './pages/RecordsList';
 import Login from './pages/Login';
 import Layout from './components/Layout';
@@ -44,7 +44,7 @@ function App() {
                   <Route path="/beans" component={() => <ProtectedRoute component={BeansList} />} />
                   <Route path="/beans/:id" component={() => <ProtectedRoute component={BeanDetail} />} />
                   <Route path="/records" component={() => <ProtectedRoute component={RecordsList} />} />
-                  <Route path="/community" component={() => <ProtectedRoute component={CommunityPage} />} />
+        
                   <Route>404: No such page!</Route>
                 </Switch>
               </Layout>

@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useLocation } from 'wouter';
 import { useAuth } from '../contexts/AuthContext';
 import { trpc } from '../trpc';
-import SHA256 from 'crypto-js/sha256';
+
 import LiquidGlassPanel from '../components/LiquidGlassPanel';
 import { useQueryClient } from '@tanstack/react-query';
 
@@ -60,17 +60,16 @@ export default function Login() {
       return;
     }
 
-    // Client-side encryption before transmission
-    const hashedPassword = SHA256(password).toString();
-
+    // Send plaintext password - HTTPS handles transport encryption
+    // Server uses bcrypt for secure password hashing
     if (isLoginView) {
-      loginMutation.mutate({ email, password: hashedPassword });
+      loginMutation.mutate({ email, password });
     } else {
       if (!name) {
         setError('请输入您的昵称');
         return;
       }
-      registerMutation.mutate({ email, password: hashedPassword, name });
+      registerMutation.mutate({ email, password, name });
     }
   };
 

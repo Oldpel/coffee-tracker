@@ -18,7 +18,6 @@ export default function Layout({ children }: { children: React.ReactNode }) {
   const navItems = [
     { href: '/', label: '仪表盘' },
     { href: '/beans', label: '我的豆子' },
-    { href: '/community', label: '社群交流' }
   ];
 
   return (
