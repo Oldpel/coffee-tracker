@@ -64,7 +64,16 @@ app.use(cors({
 const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   max: 5,
-  message: { error: '请求过于频繁，请稍后再试' },
+  // Return tRPC compatible error format
+  handler: (req, res) => {
+    res.status(429).json({
+      error: {
+        message: '请求过于频繁，请稍后再试',
+        code: -32005,
+        data: { code: 'TOO_MANY_REQUESTS', httpStatus: 429 }
+      }
+    });
+  },
   standardHeaders: true,
   legacyHeaders: false,
   // Use Cloudflare's real IP header when available, fall back to req.ip
@@ -78,6 +87,16 @@ const authLimiter = rateLimit({
 const apiLimiter = rateLimit({
   windowMs: 60 * 1000,
   max: 100,
+  // Return tRPC compatible error format
+  handler: (req, res) => {
+    res.status(429).json({
+      error: {
+        message: 'API请求过于频繁，请稍后再试',
+        code: -32005,
+        data: { code: 'TOO_MANY_REQUESTS', httpStatus: 429 }
+      }
+    });
+  },
   standardHeaders: true,
   legacyHeaders: false,
   keyGenerator: (req) => {
