@@ -60,7 +60,7 @@ const corsOptions = {
 };
 
 app.use(cors(corsOptions));
-app.options('*', cors(corsOptions));
+app.options(/(.*)/, cors(corsOptions));
 
 // #6: Rate limiting for auth endpoints (5 attempts per 15 minutes)
 const authLimiter = rateLimit({
