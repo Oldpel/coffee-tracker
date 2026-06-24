@@ -46,19 +46,21 @@ const allowedOrigins = process.env.NODE_ENV === 'production'
   ? ['https://svcoffee.xyz', 'https://www.svcoffee.xyz']
   : ['http://localhost:5173', 'http://localhost:3000'];
 
-app.use(cors({
-  origin(origin, callback) {
-    // Allow same-origin requests (no Origin header, e.g. server-to-server)
+const corsOptions = {
+  origin(origin: string | undefined, callback: (err: Error | null, allow?: boolean) => void) {
     if (!origin || allowedOrigins.includes(origin)) {
       callback(null, true);
     } else {
-      callback(new Error('Not allowed by CORS'));
+      callback(null, false);
     }
   },
   credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'],
+  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],
-}));
+};
+
+app.use(cors(corsOptions));
+app.options('*', cors(corsOptions));
 
 // #6: Rate limiting for auth endpoints (5 attempts per 15 minutes)
 const authLimiter = rateLimit({
@@ -66,13 +68,13 @@ const authLimiter = rateLimit({
   max: 5,
   // Return tRPC compatible error format
   handler: (req, res) => {
-    res.status(429).json({
+    res.status(429).json([{
       error: {
         message: '请求过于频繁，请稍后再试',
-        code: -32005,
+        code: -32001,
         data: { code: 'TOO_MANY_REQUESTS', httpStatus: 429 }
       }
-    });
+    }]);
   },
   standardHeaders: true,
   legacyHeaders: false,
@@ -89,13 +91,13 @@ const apiLimiter = rateLimit({
   max: 100,
   // Return tRPC compatible error format
   handler: (req, res) => {
-    res.status(429).json({
+    res.status(429).json([{
       error: {
         message: 'API请求过于频繁，请稍后再试',
-        code: -32005,
+        code: -32001,
         data: { code: 'TOO_MANY_REQUESTS', httpStatus: 429 }
       }
-    });
+    }]);
   },
   standardHeaders: true,
   legacyHeaders: false,

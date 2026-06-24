@@ -38,8 +38,7 @@ const t = initTRPC.context<Context>().create({
       ...shape,
       data: {
         ...shape.data,
-        // Strip stack traces in production to prevent path leakage
-        stack: process.env.NODE_ENV === 'development' ? shape.data.stack : undefined,
+        stack: undefined,
       },
     };
   },
